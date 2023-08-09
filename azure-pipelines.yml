@@ -46,13 +46,15 @@ steps:
     projects: '**/*.csproj'
 
 - task: DotNetCoreCLI@2
-  displayName: 'Publish the project - $(buildConfiguration)'
+  displayName: 'Pack the project - $(buildConfiguration)'
   inputs:
-    command: 'publish'
+    command: 'pack'
     projects: '**/*.csproj'
-    publishWebProjects: false
-    arguments: '--no-build --configuration $(buildConfiguration) --output $(Build.ArtifactStagingDirectory)/$(buildConfiguration)'
-    zipAfterPublish: true
+    arguments: '--no-build --configuration $(buildConfiguration)'
+    versioningScheme: byPrereleaseNumber
+    majorVersion: '1'
+    minorVersion: '2'
+    patchVersion: '3'
 
 - task: NuGetCommand@2
   displayName: 'Publish NuGet package'
