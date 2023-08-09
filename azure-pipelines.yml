@@ -17,6 +17,10 @@ steps:
   inputs:
     version: '$(dotnetSdkVersion)'
 
+- task: NuGetToolInstaller@0
+  inputs:
+    versionSpec: '5.9.1'
+
 - task: Npm@1
   displayName: 'Run npm install'
   inputs:
@@ -32,11 +36,13 @@ steps:
   displayName: 'Write build info'
   workingDirectory: $(wwwrootDir)
 
-- task: DotNetCoreCLI@2
-  displayName: 'Restore project dependencies'
-  inputs:
-    command: 'restore'
-    projects: '**/*.csproj'
+# - task: NuGetCommand@2
+#   displayName: 'Restore project dependencies'
+#   inputs:
+#     command: 'restore'
+#     restoreSolution: '**/*.sln'
+#     feedsToUse: 'select'
+#     vstsFeed: '$(System.TeamProject)/Tailspin.SpaceGame.Web.Models'
 
 - task: DotNetCoreCLI@2
   displayName: 'Build the project - $(buildConfiguration)'
@@ -46,20 +52,14 @@ steps:
     projects: '**/*.csproj'
 
 - task: DotNetCoreCLI@2
-  displayName: 'Pack the project - $(buildConfiguration)'
+  displayName: 'Publish the project - $(buildConfiguration)'
   inputs:
-    command: 'pack'
+    command: 'publish'
     projects: '**/*.csproj'
-    arguments: '--no-build --configuration $(buildConfiguration)'
-    versioningScheme: byPrereleaseNumber
-    majorVersion: '1'
-    minorVersion: '2'
-    patchVersion: '3'
+    publishWebProjects: false
+    arguments: '--no-build --configuration $(buildConfiguration) --output $(Build.ArtifactStagingDirectory)/$(buildConfiguration)'
+    zipAfterPublish: true
 
-- task: NuGetCommand@2
-  displayName: 'Publish NuGet package'
-  inputs:
-    command: push
-    feedPublish: '$(System.TeamProject)/Tailspin.SpaceGame.Web.Models'
-    allowPackageConflicts: true
+- task: PublishBuildArtifacts@1
+  displayName: 'Publish Artifact: drop'
   condition: succeeded()
